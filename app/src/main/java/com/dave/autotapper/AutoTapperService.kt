@@ -191,6 +191,13 @@ class AutoTapperService : AccessibilityService() {
 
     private fun updateButtonUI() {
 
+        if (isTapping) {
+            btnStartStop?.text = "■" // Stop
+        }else{
+            btnStartStop?.text = "▶" // Start
+        }
+
+
         frameLayout?.apply {
             when (isTapStarted) {
                 1 -> setBackgroundResource(R.drawable.bg_fab_start)

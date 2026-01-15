@@ -4,7 +4,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Base -->
-    <color name="bg_main">#9E0E1320</color>
+    <color name="bg_main">#121929</color>
     <color name="bg_card">#141A2A</color>
     <color name="bg_card_alt">#101626</color>
     <color name="bg_text_color">#141A2A</color>

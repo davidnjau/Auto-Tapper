@@ -30,29 +30,44 @@
 
         <!-- Permissions Required -->
         <LinearLayout
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:background="@drawable/bg_card_danger"
             android:padding="16dp"
             android:layout_marginBottom="16dp">
 
-            <TextView
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:id="@+id/tvStatus"
-                android:layout_weight="1"
+            <ImageView
+                android:padding="10dp"
+                android:background="@drawable/outline_admin_panel_settings_24"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Permissions Required"
-                android:textColor="@color/danger"
-                android:textStyle="bold"/>
+                android:layout_height="wrap_content"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Enable permissions below"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"/>
+            <LinearLayout
+                android:layout_marginStart="10dp"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:id="@+id/tvStatus"
+                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Permissions Required"
+                    android:textColor="@color/danger"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable permissions below"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"/>
+
+            </LinearLayout>
 
         </LinearLayout>
 
