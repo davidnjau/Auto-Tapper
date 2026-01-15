@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Base -->
+    <color name="bg_main">#9E0E1320</color>
+    <color name="bg_card">#141A2A</color>
+    <color name="bg_card_alt">#101626</color>
+    <color name="bg_text_color">#141A2A</color>
+
+    <!-- Primary -->
+    <color name="primary">#4F6BFF</color>
+    <color name="primary_soft">#6C7CFF</color>
+
+    <!-- Status -->
+    <color name="success">#3DDC84</color>
+    <color name="danger">#E05A5A</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A0A6C3</color>
+    <color name="text_muted">#6F7594</color>
+
+    <!-- Controls -->
+    <color name="control_bg">#1C2338</color>
+    <color name="chip_bg">#1A2136</color>
+    <color name="chip_selected">#4F6BFF</color>
+
+</resources>

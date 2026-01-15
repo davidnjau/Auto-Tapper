@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">AutoTapper</string>
+    <string name="overlay">Instructions:\n1. Enable Accessibility Service\n2. Grant Overlay Permission\n3. Use floating START/STOP button</string>
+    <string name="grant_overlay_permission">Grant Overlay Permission</string>
+    <string name="enable_accessibility_service">Enable Accessibility Service</string>
+    <string name="tap_speed_5_taps_sec">Tap Speed: 5 taps/sec</string>
+    <string name="_1_20_taps_sec">1 — 20 taps/sec</string>
+    <string name="configure_tap_speed">Configure Tap Speed</string>
+    <string name="checking_permissions">Checking permissions...</string>
+    <string name="autotapper">AutoTapper</string>
+    <string name="accessibility_service_description">AutoTapper performs automated screen taps at configurable speeds. This service requires accessibility permissions to simulate touch events on your screen. The service monitors when Vroadcast app is active and provides a floating control button to start/stop tapping.</string>
+
+</resources>

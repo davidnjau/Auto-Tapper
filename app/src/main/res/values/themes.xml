@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+
+    <style name="Theme.AutoTapper" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">@color/bg_main</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+    </style>
+
+</resources>
