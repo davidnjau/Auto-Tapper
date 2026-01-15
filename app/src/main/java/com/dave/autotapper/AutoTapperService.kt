@@ -31,6 +31,7 @@ class AutoTapperService : AccessibilityService() {
     private var btnStartStop: TextView? = null
     private var frameLayout: FrameLayout? = null
     private var tvCounter: TextView? = null
+    private var tvCounterLikes: TextView? = null
 
     private var isTapStarted = 0
     private var isTapping = false
@@ -67,6 +68,12 @@ class AutoTapperService : AccessibilityService() {
                 // Target app is in foreground
                 // You can add specific behavior here if needed
                 // For example: auto-show floating button, log activity, etc.
+            }else {
+                Log.d(TAG, "Target app not in foreground: $packageName")
+                // Target app is not in foreground
+                // You can add specific behavior here if needed
+                // For example: hide floating button, log activity, etc.
+                stopTapping()
             }
         }
     }
@@ -86,6 +93,7 @@ class AutoTapperService : AccessibilityService() {
     private fun loadTapSpeed() {
         val prefs = getSharedPreferences("AutoTapperPrefs", Context.MODE_PRIVATE)
         tapSpeed = prefs.getInt("tap_speed", 5)
+        Log.d(TAG, "Loaded tap speed: $tapSpeed")
     }
 
     fun updateTapSpeed(speed: Int) {
@@ -113,11 +121,12 @@ class AutoTapperService : AccessibilityService() {
 
         params.gravity = Gravity.TOP or Gravity.END
         params.x = 20
-        params.y = 100
+        params.y = 150
 
         frameLayout = overlayView?.findViewById(R.id.frameLayout)
         btnStartStop = overlayView?.findViewById(R.id.btnStartStop)
         tvCounter = overlayView?.findViewById(R.id.tvCounter)
+        tvCounterLikes = overlayView?.findViewById(R.id.tvCounterLikes)
 
         btnStartStop?.setOnClickListener {
             if (isTapping) {
@@ -209,6 +218,10 @@ class AutoTapperService : AccessibilityService() {
 
     private fun updateCounter() {
         tvCounter?.text = "Taps: $tapCount"
+
+        val likesFromTaps = LikesCalculator.calculateExpectedLikesFromAppTaps(tapCount)
+        tvCounterLikes?.text = "Est Likes: $likesFromTaps"
+
     }
 
 }

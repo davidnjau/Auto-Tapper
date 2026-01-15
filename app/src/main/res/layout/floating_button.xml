@@ -13,23 +13,40 @@
         android:text="Start"
         android:textColor="#FFFFFF" />
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_marginStart="10dp"
-        android:background="@drawable/bg_fab_normal"
-        android:layout_width="64dp"
-        android:layout_height="64dp">
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <FrameLayout
+            android:id="@+id/frameLayout"
+            android:background="@drawable/bg_fab_normal"
+            android:layout_width="64dp"
+            android:layout_height="64dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnStartStop"
+                android:text="■"
+                android:textSize="24sp"
+                android:textColor="@color/text_primary"
+                android:layout_gravity="center"/>
+
+        </FrameLayout>
 
         <TextView
+            android:background="@drawable/bg_text_bac"
+            android:id="@+id/tvCounterLikes"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/btnStartStop"
-            android:text="■"
-            android:textSize="24sp"
-            android:textColor="@color/text_primary"
-            android:layout_gravity="center"/>
+            android:text="0"
+            android:textColor="#FFFFFF" />
 
-    </FrameLayout>
+
+    </LinearLayout>
 
 
 </LinearLayout>
