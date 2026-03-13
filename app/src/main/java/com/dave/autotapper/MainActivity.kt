@@ -1,8 +1,5 @@
 package com.dave.autotapper
 
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
 import android.net.Uri

@@ -12,7 +12,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
 import kotlinx.coroutines.*
@@ -33,7 +32,9 @@ class AutoTapperService : AccessibilityService() {
     private var tvCounter: TextView? = null
     private var tvCounterLikes: TextView? = null
 
-    private var isTapStarted = 0
+    private enum class TapState { IDLE, STARTED, STOPPED }
+
+    private var tapState = TapState.IDLE
     private var isTapping = false
     private var tapCount = 0
     private var tapSpeed = 5 // taps per second
@@ -65,15 +66,9 @@ class AutoTapperService : AccessibilityService() {
 
             if (targetPackages.contains(packageName)) {
                 Log.d(TAG, "Target app in foreground: $packageName")
-                // Target app is in foreground
-                // You can add specific behavior here if needed
-                // For example: auto-show floating button, log activity, etc.
-            }else {
+            } else {
                 Log.d(TAG, "Target app not in foreground: $packageName")
-                // Target app is not in foreground
-                // You can add specific behavior here if needed
-                // For example: hide floating button, log activity, etc.
-                stopTapping()
+                serviceScope.launch { stopTapping() }
             }
         }
     }
@@ -99,8 +94,9 @@ class AutoTapperService : AccessibilityService() {
     fun updateTapSpeed(speed: Int) {
         tapSpeed = speed
         if (isTapping) {
-            // Restart tapping with new speed
+            val savedCount = tapCount
             stopTapping()
+            tapCount = savedCount
             startTapping()
         }
     }
@@ -119,9 +115,10 @@ class AutoTapperService : AccessibilityService() {
             PixelFormat.TRANSLUCENT
         )
 
+        val density = resources.displayMetrics.density
         params.gravity = Gravity.TOP or Gravity.END
-        params.x = 20
-        params.y = 150
+        params.x = (20 * density).toInt()
+        params.y = (150 * density).toInt()
 
         frameLayout = overlayView?.findViewById(R.id.frameLayout)
         btnStartStop = overlayView?.findViewById(R.id.btnStartStop)
@@ -150,7 +147,7 @@ class AutoTapperService : AccessibilityService() {
     private fun startTapping() {
         Log.d(TAG, "Starting tapping at speed: $tapSpeed")
         isTapping = true
-        isTapStarted = 1 //Started
+        tapState = TapState.STARTED
         tapCount = 0
         updateButtonUI()
 
@@ -169,7 +166,7 @@ class AutoTapperService : AccessibilityService() {
     private fun stopTapping() {
         Log.d(TAG, "Stopping tapping")
         isTapping = false
-        isTapStarted = 2
+        tapState = TapState.STOPPED
         tapJob?.cancel()
         tapJob = null
         updateButtonUI()
@@ -208,10 +205,10 @@ class AutoTapperService : AccessibilityService() {
 
 
         frameLayout?.apply {
-            when (isTapStarted) {
-                1 -> setBackgroundResource(R.drawable.bg_fab_start)
-                2 -> setBackgroundResource(R.drawable.bg_fab_end)
-                else -> setBackgroundResource(R.drawable.bg_fab_normal)
+            when (tapState) {
+                TapState.STARTED -> setBackgroundResource(R.drawable.bg_fab_start)
+                TapState.STOPPED -> setBackgroundResource(R.drawable.bg_fab_end)
+                TapState.IDLE    -> setBackgroundResource(R.drawable.bg_fab_normal)
             }
         }
     }
