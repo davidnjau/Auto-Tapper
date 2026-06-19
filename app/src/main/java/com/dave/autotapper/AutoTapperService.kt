@@ -3,10 +3,15 @@ package com.dave.autotapper
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.os.Build
 import android.view.accessibility.AccessibilityNodeInfo
 import android.util.Log
 import android.view.Gravity
@@ -16,6 +21,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 
 @SuppressLint("AccessibilityPolicy")
@@ -26,6 +32,8 @@ class AutoTapperService : AccessibilityService() {
     companion object {
         var instance: AutoTapperService? = null
         private val LIKE_COUNT_PATTERN = Regex("""^\d+(\.\d+)?[KkMmBb]?$""")
+        private const val CHANNEL_ID = "session_summary"
+        private const val NOTIFICATION_ID = 1001
     }
 
     private var overlayView: View? = null
@@ -61,6 +69,7 @@ class AutoTapperService : AccessibilityService() {
         super.onCreate()
         instance = this
         loadTapSpeed()
+        createNotificationChannel()
     }
 
     override fun onServiceConnected() {
@@ -195,19 +204,30 @@ class AutoTapperService : AccessibilityService() {
     private fun stopTapping() {
         if (tapCount > 0) {
             val successRate = completedGestures * 100 / tapCount
-            Log.i(TAG, "Session summary — attempts: $tapCount | completed: $completedGestures | cancelled: $cancelledGestures | foreground losses: $foregroundLossEvents | success rate: $successRate%")
-
+            val estimatedLikes = LikesCalculator.calculateExpectedLikesFromAppTaps(tapCount)
             val endCount = readLikeCountFromScreen()
             val baseline = screenBaseline
+
+            Log.i(TAG, "Session summary — attempts: $tapCount | completed: $completedGestures | " +
+                    "cancelled: $cancelledGestures | foreground losses: $foregroundLossEvents | success rate: $successRate%")
+
             if (baseline != null && endCount != null) {
                 val actualDelta = endCount - baseline
-                val observedRate = if (tapCount > 0) actualDelta.toDouble() / tapCount else 0.0
+                val observedRate = actualDelta.toDouble() / tapCount
                 val configuredRate = LikesCalculator.REGISTRATION_RATE * 100
                 Log.i(TAG, "Calibration — baseline: $baseline | end: $endCount | actual delta: $actualDelta | " +
                         "observed rate: ${"%.1f".format(observedRate * 100)}% | configured rate: ${"%.1f".format(configuredRate)}%")
             } else {
                 Log.w(TAG, "Calibration skipped — could not read end like count from screen")
             }
+
+            showSessionSummaryNotification(
+                taps = tapCount,
+                successRate = successRate,
+                estimatedLikes = estimatedLikes,
+                baseline = baseline,
+                endCount = endCount
+            )
         }
         Log.d(TAG, "Stopping tapping")
         isTapping = false
@@ -290,7 +310,68 @@ class AutoTapperService : AccessibilityService() {
         }
     }
 
-    // ── Screen reading ────────────────────────────────────────────────────────
+    // ── Notifications ─────────────────────────────────────────────────────────
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Session Summary",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Shown after each Auto Tapper session with tap and like statistics"
+            }
+            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+                .createNotificationChannel(channel)
+        }
+    }
+
+    private fun showSessionSummaryNotification(
+        taps: Int,
+        successRate: Int,
+        estimatedLikes: Int,
+        baseline: Long?,
+        endCount: Long?
+    ) {
+        val body = buildString {
+            appendLine("Taps: ${"%,d".format(taps)}  ·  Success rate: $successRate%")
+            appendLine()
+            if (baseline != null && endCount != null) {
+                val delta = endCount - baseline
+                appendLine("Likes before:     ${"%,d".format(baseline)}")
+                appendLine("Likes after:      ${"%,d".format(endCount)}")
+                appendLine("Actual gained:    +${"%,d".format(delta)}")
+                append(    "Estimated gained: +${"%,d".format(estimatedLikes)}")
+            } else {
+                appendLine("Estimated gained: +${"%,d".format(estimatedLikes)}")
+                append("(Live like count unavailable)")
+            }
+        }
+
+        val openApp = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Auto Tapper — Session Complete")
+            .setContentText("Taps: ${"%,d".format(taps)}  ·  Success: $successRate%")
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openApp)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+            .notify(NOTIFICATION_ID, notification)
+    }
+
+    // ── Screen reading ─────────────────────────────────────────────────────────
 
     private fun readLikeCountFromScreen(): Long? {
         val root = rootInActiveWindow ?: return null
