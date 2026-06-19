@@ -8,7 +8,7 @@ object SessionStore {
 
     private const val PREFS_NAME = "AutoTapperSessions"
     private const val KEY_SESSIONS = "sessions"
-    private const val MAX_SESSIONS = 50
+    private const val MAX_SESSIONS = 100
 
     fun save(context: Context, session: SessionData) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

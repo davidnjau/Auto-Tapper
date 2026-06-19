@@ -89,16 +89,34 @@ class SessionHistoryActivity : AppCompatActivity() {
         tvRecConfig.text = "${bestConfig.speed} taps/sec  ·  ${bestConfig.multiplier}×"
         tvRecReason.text = "Score ${"%.2f".format(best.second)} effective taps/sec  ·  avg success ${"%.1f".format(best.third)}%  ·  ${grouped[bestConfig]!!.size} sessions"
 
+        // Persist best config so MainActivity can read it next launch
+        val prefs = getSharedPreferences("AutoTapperPrefs", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putInt("best_speed", bestConfig.speed)
+            .putInt("best_multiplier", bestConfig.multiplier)
+            .apply()
+
         btnApply.visibility = View.VISIBLE
+
+        // Show already-applied state if current active config matches best
+        val currentSpeed = prefs.getInt("tap_speed", 5)
+        val currentMultiplier = prefs.getInt("tap_multiplier", 1)
+        if (currentSpeed == bestConfig.speed && currentMultiplier == bestConfig.multiplier) {
+            btnApply.text = "✓  APPLIED"
+            btnApply.isEnabled = false
+            btnApply.alpha = 0.6f
+        }
+
         btnApply.setOnClickListener {
-            val prefs = getSharedPreferences("AutoTapperPrefs", Context.MODE_PRIVATE)
             prefs.edit()
                 .putInt("tap_speed", bestConfig.speed)
                 .putInt("tap_multiplier", bestConfig.multiplier)
                 .apply()
             AutoTapperService.instance?.updateTapSpeed(bestConfig.speed)
             AutoTapperService.instance?.updateTapMultiplier(bestConfig.multiplier)
-            Toast.makeText(this, "Configuration applied", Toast.LENGTH_SHORT).show()
+            btnApply.text = "✓  APPLIED"
+            btnApply.isEnabled = false
+            btnApply.alpha = 0.6f
         }
     }
 
@@ -197,15 +215,52 @@ class SessionHistoryActivity : AppCompatActivity() {
         row2.addView(tvSuccess)
         card.addView(row2)
 
-        // Row 3: likes
-        val likesText = if (s.actualDelta != null) {
-            "Actual: +${"%,d".format(s.actualDelta)}  ·  Est: +${"%,d".format(s.estimatedLikes)}"
-        } else {
-            "Est likes: +${"%,d".format(s.estimatedLikes)}"
+        // Row 3: before → after likes
+        if (s.baselineLikes != null && s.endLikes != null) {
+            val row3 = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                val lp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (3 * resources.displayMetrics.density).toInt() }
+                layoutParams = lp
+            }
+
+            val tvBefore = TextView(ctx).apply {
+                text = formatLikes(s.baselineLikes)
+                textSize = 12f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
+            }
+            val tvArrow = TextView(ctx).apply {
+                text = "  →  "
+                textSize = 11f
+                setTextColor(ContextCompat.getColor(ctx, R.color.text_muted))
+            }
+            val tvAfter = TextView(ctx).apply {
+                text = formatLikes(s.endLikes)
+                textSize = 12f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setTextColor(ContextCompat.getColor(ctx, R.color.success))
+            }
+            val tvDelta = TextView(ctx).apply {
+                text = "  (+${"%,d".format(s.actualDelta ?: 0)})"
+                textSize = 11f
+                setTextColor(ContextCompat.getColor(ctx, R.color.text_muted))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+
+            row3.addView(tvBefore)
+            row3.addView(tvArrow)
+            row3.addView(tvAfter)
+            row3.addView(tvDelta)
+            card.addView(row3)
         }
 
+        // Row 4: estimated likes
         val tvLikes = TextView(ctx).apply {
-            text = likesText
+            text = "Est: +${"%,d".format(s.estimatedLikes)} likes"
             textSize = 11f
             setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
         }
