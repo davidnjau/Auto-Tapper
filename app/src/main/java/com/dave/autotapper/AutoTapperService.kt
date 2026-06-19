@@ -6,6 +6,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.view.accessibility.AccessibilityNodeInfo
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -23,6 +25,7 @@ class AutoTapperService : AccessibilityService() {
 
     companion object {
         var instance: AutoTapperService? = null
+        private val LIKE_COUNT_PATTERN = Regex("""^\d+(\.\d+)?[KkMmBb]?$""")
     }
 
     private var overlayView: View? = null
@@ -44,6 +47,7 @@ class AutoTapperService : AccessibilityService() {
     private var completedGestures = 0
     private var cancelledGestures = 0
     private var foregroundLossEvents = 0
+    private var screenBaseline: Long? = null  // like count read from screen at session start
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -162,6 +166,10 @@ class AutoTapperService : AccessibilityService() {
         completedGestures = 0
         cancelledGestures = 0
         foregroundLossEvents = 0
+        screenBaseline = readLikeCountFromScreen().also {
+            if (it != null) Log.i(TAG, "Baseline like count: $it")
+            else Log.w(TAG, "Could not read baseline like count from screen")
+        }
         updateButtonUI()
 
         tapJob = serviceScope.launch {
@@ -188,6 +196,18 @@ class AutoTapperService : AccessibilityService() {
         if (tapCount > 0) {
             val successRate = completedGestures * 100 / tapCount
             Log.i(TAG, "Session summary — attempts: $tapCount | completed: $completedGestures | cancelled: $cancelledGestures | foreground losses: $foregroundLossEvents | success rate: $successRate%")
+
+            val endCount = readLikeCountFromScreen()
+            val baseline = screenBaseline
+            if (baseline != null && endCount != null) {
+                val actualDelta = endCount - baseline
+                val observedRate = if (tapCount > 0) actualDelta.toDouble() / tapCount else 0.0
+                val configuredRate = LikesCalculator.REGISTRATION_RATE * 100
+                Log.i(TAG, "Calibration — baseline: $baseline | end: $endCount | actual delta: $actualDelta | " +
+                        "observed rate: ${"%.1f".format(observedRate * 100)}% | configured rate: ${"%.1f".format(configuredRate)}%")
+            } else {
+                Log.w(TAG, "Calibration skipped — could not read end like count from screen")
+            }
         }
         Log.d(TAG, "Stopping tapping")
         isTapping = false
@@ -260,9 +280,63 @@ class AutoTapperService : AccessibilityService() {
     private fun updateCounter() {
         tvCounter?.text = "Taps: $tapCount"
 
-        val likesFromTaps = LikesCalculator.calculateExpectedLikesFromAppTaps(tapCount)
-        tvCounterLikes?.text = "Est Likes: $likesFromTaps"
+        val estimatedFromTaps = LikesCalculator.calculateExpectedLikesFromAppTaps(tapCount)
+        val baseline = screenBaseline
+        if (baseline != null) {
+            val total = baseline + estimatedFromTaps
+            tvCounterLikes?.text = "~${formatLikeCount(total)}"
+        } else {
+            tvCounterLikes?.text = "Est: $estimatedFromTaps"
+        }
+    }
 
+    // ── Screen reading ────────────────────────────────────────────────────────
+
+    private fun readLikeCountFromScreen(): Long? {
+        val root = rootInActiveWindow ?: return null
+        val node = findLikeNode(root) ?: return null
+        val text = node.text?.toString() ?: node.contentDescription?.toString() ?: return null
+        return parseLikeCount(text)
+    }
+
+    /**
+     * Traverses the accessibility tree looking for a node whose text matches a like-count format
+     * (e.g. "1.2K", "45.6K", "1.2M") and is positioned in TikTok's right-side action rail
+     * (centerX > 72% of screen width, centerY between 30–90% of screen height).
+     */
+    private fun findLikeNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        val text = node.text?.toString()?.trim() ?: ""
+        if (text.isNotEmpty() && LIKE_COUNT_PATTERN.matches(text)) {
+            val bounds = Rect()
+            node.getBoundsInScreen(bounds)
+            val metrics = resources.displayMetrics
+            val relX = bounds.centerX().toFloat() / metrics.widthPixels
+            val relY = bounds.centerY().toFloat() / metrics.heightPixels
+            if (relX > 0.72f && relY in 0.30f..0.90f) {
+                return node
+            }
+        }
+        for (i in 0 until node.childCount) {
+            val found = findLikeNode(node.getChild(i) ?: continue)
+            if (found != null) return found
+        }
+        return null
+    }
+
+    private fun parseLikeCount(raw: String): Long? {
+        val cleaned = raw.trim().uppercase().replace(",", "")
+        return when {
+            cleaned.endsWith("B") -> cleaned.dropLast(1).toDoubleOrNull()?.times(1_000_000_000)?.toLong()
+            cleaned.endsWith("M") -> cleaned.dropLast(1).toDoubleOrNull()?.times(1_000_000)?.toLong()
+            cleaned.endsWith("K") -> cleaned.dropLast(1).toDoubleOrNull()?.times(1_000)?.toLong()
+            else -> cleaned.filter { it.isDigit() }.toLongOrNull()
+        }
+    }
+
+    private fun formatLikeCount(count: Long): String = when {
+        count >= 1_000_000 -> "${"%.1f".format(count / 1_000_000.0)}M"
+        count >= 1_000     -> "${"%.1f".format(count / 1_000.0)}K"
+        else               -> count.toString()
     }
 
 }
