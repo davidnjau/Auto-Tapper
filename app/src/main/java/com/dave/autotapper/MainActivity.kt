@@ -3,6 +3,7 @@ package com.dave.autotapper
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvWarningTitle: TextView
     private lateinit var tvWarningMessage: TextView
 
+    private lateinit var btnViewHistory: TextView
+
     private enum class WarnLevel { NONE, CAUTION, DANGER }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         setupRecommendation()
         updateServiceStatus()
+        requestNotificationPermission()
     }
 
     override fun onResume() {
@@ -82,6 +86,8 @@ class MainActivity : AppCompatActivity() {
         tvWarningIcon = findViewById(R.id.tvWarningIcon)
         tvWarningTitle = findViewById(R.id.tvWarningTitle)
         tvWarningMessage = findViewById(R.id.tvWarningMessage)
+
+        btnViewHistory = findViewById(R.id.btnViewHistory)
 
         val prefs = getSharedPreferences("AutoTapperPrefs", Context.MODE_PRIVATE)
 
@@ -134,6 +140,10 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Service already enabled", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        btnViewHistory.setOnClickListener {
+            SessionHistoryActivity.start(this)
         }
 
         btnOpenSettings.setOnClickListener {
@@ -290,6 +300,18 @@ class MainActivity : AppCompatActivity() {
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         )
         return enabledServices?.contains(service) == true
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    0
+                )
+            }
+        }
     }
 
     private fun openAccessibilitySettings() {

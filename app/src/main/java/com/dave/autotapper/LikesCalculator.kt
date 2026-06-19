@@ -10,7 +10,7 @@ object LikesCalculator {
 
     // Constants based on your actual performance data
     private const val APP_EFFICIENCY = 0.9678      // 96.78% - How many taps app actually performs
-    private const val REGISTRATION_RATE = 0.9780    // 97.8% - How many app taps become likes
+    const val REGISTRATION_RATE = 0.9780            // 97.8% - How many app taps become likes
     private const val COMBINED_EFFICIENCY = 0.9465  // APP_EFFICIENCY × REGISTRATION_RATE
 
     /**
