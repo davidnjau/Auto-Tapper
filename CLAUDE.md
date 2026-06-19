@@ -21,9 +21,9 @@ Auto-Tapper is an Android accessibility service app that automates tapping on Ti
 
 The app has three core classes in `app/src/main/java/com/dave/autotapper/`:
 
-**`MainActivity.kt`** — Configuration UI. Manages the tap speed SeekBar (range 1–9, displayed as 1–10 taps/sec), checks Accessibility Service and `SYSTEM_ALERT_WINDOW` permissions, and persists the speed setting via SharedPreferences. Reads `AutoTapperService.instance` on resume to show live service status.
+**`MainActivity.kt`** — Configuration UI. Manages the tap speed SeekBar (`android:max="8"`, so `speed = progress + 1` gives 1–9 taps/sec), checks Accessibility Service and `SYSTEM_ALERT_WINDOW` permissions, and persists the speed setting via SharedPreferences (`AutoTapperPrefs` key `tap_speed`). Reads `AutoTapperService.instance` on resume to show live service status.
 
-**`AutoTapperService.kt`** — Android AccessibilityService that does all the work. On connect, inflates `floating_button.xml` as a `TYPE_ACCESSIBILITY_OVERLAY` window anchored to the top-right. A Kotlin coroutine loop fires `GestureDescription.StrokeDescription` (10ms duration) at the screen center, at the configured rate (1–20 taps/sec). Exposes a companion `instance` singleton so `MainActivity` can read state. Tap speed can be updated dynamically without restarting the service.
+**`AutoTapperService.kt`** — Android AccessibilityService that does all the work. On connect, inflates `floating_button.xml` as a `TYPE_ACCESSIBILITY_OVERLAY` window anchored to the top-right. A Kotlin coroutine loop fires `GestureDescription.StrokeDescription` (10ms duration) at the screen center, at the configured rate (1–9 taps/sec; `delayMs = 1000L / tapSpeed`). Auto-stops tapping when `onAccessibilityEvent` detects a non-TikTok package in the foreground. Exposes a companion `instance` singleton so `MainActivity` can read state. Tap speed can be updated dynamically without restarting the service. The internal `TapState` enum (IDLE/STARTED/STOPPED) drives three overlay background drawables (`bg_fab_normal`, `bg_fab_start`, `bg_fab_end`).
 
 **`LikesCalculator.kt`** — Singleton object with pre-measured efficiency constants (`APP_EFFICIENCY = 96.78%`, `REGISTRATION_RATE = 97.8%`, `COMBINED_EFFICIENCY = 94.65%`). Provides forward/reverse calculations between time+speed and expected likes, plus breakdown and reference-table helpers.
 

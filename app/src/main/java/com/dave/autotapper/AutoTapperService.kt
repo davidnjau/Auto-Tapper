@@ -38,6 +38,7 @@ class AutoTapperService : AccessibilityService() {
     private var isTapping = false
     private var tapCount = 0
     private var tapSpeed = 5 // taps per second
+    private var tapMultiplier = 1 // strokes per dispatch: 1, 2, or 3
     private var tapJob: Job? = null
 
     private var completedGestures = 0
@@ -92,7 +93,8 @@ class AutoTapperService : AccessibilityService() {
     private fun loadTapSpeed() {
         val prefs = getSharedPreferences("AutoTapperPrefs", Context.MODE_PRIVATE)
         tapSpeed = prefs.getInt("tap_speed", 5)
-        Log.d(TAG, "Loaded tap speed: $tapSpeed")
+        tapMultiplier = prefs.getInt("tap_multiplier", 1)
+        Log.d(TAG, "Loaded tap speed: $tapSpeed, multiplier: ${tapMultiplier}x")
     }
 
     fun updateTapSpeed(speed: Int) {
@@ -103,6 +105,10 @@ class AutoTapperService : AccessibilityService() {
             tapCount = savedCount
             startTapping()
         }
+    }
+
+    fun updateTapMultiplier(multiplier: Int) {
+        tapMultiplier = multiplier
     }
 
     private fun createFloatingButton() {
@@ -159,7 +165,10 @@ class AutoTapperService : AccessibilityService() {
         updateButtonUI()
 
         tapJob = serviceScope.launch {
-            val baseDelay = 1000L / tapSpeed
+            // Ensure the delay is long enough for the full gesture to complete before the next dispatch.
+            // Each extra stroke adds 60ms (50ms duration + 10ms gap); min safe window = multiplier * 60ms.
+            val gestureDurationMs = (tapMultiplier * 60).toLong()
+            val baseDelay = maxOf(1000L / tapSpeed, gestureDurationMs)
 
             while (isTapping) {
                 if (!isTikTokForeground()) {
@@ -168,7 +177,7 @@ class AutoTapperService : AccessibilityService() {
                     break
                 }
                 performTap()
-                tapCount++
+                tapCount += tapMultiplier
                 updateCounter()
                 delay(baseDelay + (-30L..30L).random())
             }
@@ -203,28 +212,27 @@ class AutoTapperService : AccessibilityService() {
     }
 
     private fun performTap() {
-        val (x, y) = getRandomTapPoint()
-
-        Log.d(TAG, "Performing tap at ($x, $y)")
-
-        val path = Path()
-        path.moveTo(x, y)
-
         val gestureBuilder = GestureDescription.Builder()
-        val gesture = gestureBuilder
-            .addStroke(GestureDescription.StrokeDescription(path, 0, 50))
-            .build()
+        repeat(tapMultiplier) { i ->
+            val (x, y) = getRandomTapPoint()
+            val path = Path().apply { moveTo(x, y) }
+            // Each stroke offset by 60ms so strokes don't overlap (50ms duration + 10ms gap).
+            gestureBuilder.addStroke(GestureDescription.StrokeDescription(path, (i * 60).toLong(), 50))
+        }
+        val gesture = gestureBuilder.build()
+
+        Log.d(TAG, "Dispatching ${tapMultiplier}x tap gesture")
 
         dispatchGesture(
             gesture,
             object : GestureResultCallback() {
                 override fun onCompleted(gestureDescription: GestureDescription?) {
                     completedGestures++
-                    Log.d(TAG, "Tap completed at ($x, $y)")
+                    Log.d(TAG, "Gesture completed (${tapMultiplier}x)")
                 }
                 override fun onCancelled(gestureDescription: GestureDescription?) {
                     cancelledGestures++
-                    Log.w(TAG, "Tap cancelled at ($x, $y)")
+                    Log.w(TAG, "Gesture cancelled (${tapMultiplier}x)")
                 }
             },
             null
