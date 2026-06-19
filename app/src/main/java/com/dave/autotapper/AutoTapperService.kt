@@ -381,15 +381,14 @@ class AutoTapperService : AccessibilityService() {
     }
 
     /**
-     * Traverses the accessibility tree looking for a node whose text matches a like-count format
-     * (e.g. "1.2K", "45.6K", "1.2M") and is positioned in TikTok's top-left area
-     * (centerX < 40% of screen width, centerY between 5–40% of screen height).
+     * Traverses the accessibility tree looking for a node whose text or contentDescription
+     * matches a like-count format (e.g. "1.2K", "45.6K", "1.2M").
      *
-     * If no node is found, check logcat tag TapperService for "candidate" lines — they show
-     * every number-pattern match with its screen position, which can be used to tune these bounds.
+     * Logs every candidate with its screen position under tag TapperService so the
+     * position filter can be tuned if needed.
      */
     private fun findLikeNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val text = node.text?.toString()?.trim() ?: ""
+        val text = (node.text?.toString() ?: node.contentDescription?.toString())?.trim() ?: ""
         if (text.isNotEmpty() && LIKE_COUNT_PATTERN.matches(text)) {
             val bounds = Rect()
             node.getBoundsInScreen(bounds)
@@ -397,8 +396,9 @@ class AutoTapperService : AccessibilityService() {
             val relX = bounds.centerX().toFloat() / metrics.widthPixels
             val relY = bounds.centerY().toFloat() / metrics.heightPixels
             Log.d(TAG, "Like count candidate: '$text'  relX=${"%.2f".format(relX)}  relY=${"%.2f".format(relY)}")
-            if (relX < 0.40f && relY in 0.05f..0.40f) {
-                Log.i(TAG, "Like count matched: '$text'")
+            // Cover the left 60% and top 65% of the screen to handle variation across TikTok versions
+            if (relX < 0.60f && relY in 0.05f..0.65f) {
+                Log.i(TAG, "Like count matched: '$text'  relX=${"%.2f".format(relX)}  relY=${"%.2f".format(relY)}")
                 return node
             }
         }
