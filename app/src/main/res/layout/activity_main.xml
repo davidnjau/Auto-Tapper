@@ -5,164 +5,575 @@
     android:background="@color/bg_main">
 
     <LinearLayout
-        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="56dp">
 
-        <!-- App Header -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Auto Tapper"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Precision Control"
-            android:textSize="12sp"
-            android:textColor="@color/text_muted"
-            android:layout_marginBottom="16dp"/>
-
-        <!-- Permissions Required -->
+        <!-- ── HEADER ──────────────────────────────────── -->
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:background="@drawable/bg_card_danger"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="20dp"
+            android:paddingBottom="6dp">
 
-            <ImageView
-                android:padding="10dp"
-                android:background="@drawable/outline_admin_panel_settings_24"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="AUTO TAPPER"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:letterSpacing="0.18"
+                android:paddingEnd="8dp"/>
+
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="v1.0"
+                android:textSize="11sp"
+                android:textColor="@color/cyan"
+                android:letterSpacing="0.1"
+                android:background="@color/cyan_dim"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"/>
 
+        </LinearLayout>
+
+        <!-- Cyan scan line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/cyan"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ACCESSIBILITY AUTOMATION SYSTEM"
+            android:textSize="10sp"
+            android:letterSpacing="0.15"
+            android:textColor="@color/cyan"
+            android:layout_marginBottom="22dp"/>
+
+        <!-- ── SYSTEM STATUS ───────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_hud"
+            android:padding="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SYSTEM STATUS"
+                android:textSize="10sp"
+                android:letterSpacing="0.15"
+                android:textColor="@color/cyan"
+                android:textStyle="bold"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- Accessibility row -->
             <LinearLayout
-                android:layout_marginStart="10dp"
-                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
 
                 <TextView
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:id="@+id/tvStatus"
+                    android:id="@+id/dotAccessibility"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_muted"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Permissions Required"
-                    android:textColor="@color/danger"
-                    android:textStyle="bold"/>
+                    android:text="ACCESSIBILITY SERVICE"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/text_secondary"/>
 
                 <TextView
+                    android:id="@+id/tvStatusAccessibility"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Enable permissions below"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"/>
+                    android:text="CHECKING"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/text_muted"/>
+
+            </LinearLayout>
+
+            <!-- Overlay row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/dotOverlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_muted"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="OVERLAY PERMISSION"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/text_secondary"/>
+
+                <TextView
+                    android:id="@+id/tvStatusOverlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CHECKING"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/text_muted"/>
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Tap Speed Card -->
+        <!-- ── DEVICE ANALYSIS ────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_hud"
             android:padding="16dp"
             android:orientation="vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tap Speed"
-                android:textColor="@color/text_primary"
+                android:text="DEVICE ANALYSIS"
+                android:textSize="10sp"
+                android:letterSpacing="0.15"
+                android:textColor="@color/cyan"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Spec pills -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <TextView
+                    android:id="@+id/tvSpecRefreshRate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="60Hz"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/cyan"
+                    android:background="@color/cyan_dim"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvSpecRam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4GB RAM"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/cyan"
+                    android:background="@color/cyan_dim"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvSpecCores"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8 cores"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/cyan"
+                    android:background="@color/cyan_dim"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/control_bg"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- Recommended values -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TAP SPEED"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.08"
+                    android:textColor="@color/text_muted"/>
+
+                <TextView
+                    android:id="@+id/tvRecSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7 taps/sec"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="MULTIPLIER"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.08"
+                    android:textColor="@color/text_muted"/>
+
+                <TextView
+                    android:id="@+id/tvRecMultiplier"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1×"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnApplyRecommended"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="APPLY CONFIGURATION"
+                android:textSize="13sp"
+                android:letterSpacing="0.1"
                 android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/tvTapSpeed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5"
-                android:textSize="36sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_gravity="center_horizontal"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="taps/sec"
-                android:textColor="@color/text_muted"
-                android:layout_gravity="center_horizontal"/>
         </LinearLayout>
 
-        <SeekBar
-            android:id="@+id/seekBarSpeed"
+        <!-- ── CONFIGURATION WARNING ─────────────────── -->
+        <LinearLayout
+            android:id="@+id/cardWarning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="8"
-            android:progress="4"
-            android:layout_marginBottom="10dp" />
+            android:background="@drawable/bg_card_warning_hud"
+            android:padding="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-        <!-- Accessibility -->
+                <TextView
+                    android:id="@+id/tvWarningIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚠"
+                    android:textSize="14sp"
+                    android:textColor="@color/warning"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvWarningTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CONFIGURATION WARNING"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.15"
+                    android:textStyle="bold"
+                    android:textColor="@color/warning"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvWarningMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="12sp"
+                android:letterSpacing="0.02"
+                android:textColor="@color/text_secondary"
+                android:lineSpacingExtra="4dp"/>
+
+        </LinearLayout>
+
+        <!-- ── TAP FREQUENCY ──────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_hud_subtle"
+            android:padding="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TAP FREQUENCY"
+                android:textSize="10sp"
+                android:letterSpacing="0.15"
+                android:textColor="@color/text_muted"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/tvTapSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5"
+                    android:textSize="72sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    android:letterSpacing="-0.02"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TAPS&#10;/ SEC"
+                    android:textSize="13sp"
+                    android:letterSpacing="0.05"
+                    android:textColor="@color/text_muted"/>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekBarSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="8"
+                android:progress="4"
+                android:layout_marginBottom="6dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_muted"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="9"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_muted"
+                    android:gravity="end"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ── OUTPUT MULTIPLIER ──────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_hud_subtle"
+            android:padding="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OUTPUT MULTIPLIER"
+                android:textSize="10sp"
+                android:letterSpacing="0.15"
+                android:textColor="@color/text_muted"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"/>
+
+            <RadioGroup
+                android:id="@+id/rgMultiplier"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb1x"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="1×"
+                    android:checked="true"
+                    android:textColor="@color/chip_text_selector"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:gravity="center"
+                    android:button="@null"
+                    android:background="@drawable/bg_chip_selector"
+                    android:layout_marginEnd="6dp"/>
+
+                <RadioButton
+                    android:id="@+id/rb2x"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="2×"
+                    android:textColor="@color/chip_text_selector"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:gravity="center"
+                    android:button="@null"
+                    android:background="@drawable/bg_chip_selector"
+                    android:layout_marginEnd="6dp"/>
+
+                <RadioButton
+                    android:id="@+id/rb3x"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="3×"
+                    android:textColor="@color/chip_text_selector"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:gravity="center"
+                    android:button="@null"
+                    android:background="@drawable/bg_chip_selector"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <!-- ── ACCESS CONTROL ────────────────────────── -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_hud_subtle"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCESS CONTROL"
+                android:textSize="10sp"
+                android:letterSpacing="0.15"
+                android:textColor="@color/text_muted"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"/>
 
             <Button
                 android:id="@+id/btnEnableService"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Enable Accessibility Service"
-                android:textSize="16sp"
-                android:padding="16dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_height="52dp"
+                android:text="ENABLE ACCESSIBILITY SERVICE"
+                android:textSize="13sp"
+                android:letterSpacing="0.08"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
 
             <Button
                 android:id="@+id/btnOpenSettings"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Grant Overlay Permission"
-                android:textSize="16sp"
-                android:padding="16dp" />
+                android:layout_height="52dp"
+                android:text="GRANT OVERLAY PERMISSION"
+                android:textSize="13sp"
+                android:letterSpacing="0.08"
+                android:textStyle="bold"/>
 
         </LinearLayout>
 
-        <!-- Instructions -->
+        <!-- ── OPERATION GUIDE ───────────────────────── -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_hud_subtle"
             android:padding="16dp">
 
             <TextView
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Instructions"
+                android:text="OPERATION GUIDE"
+                android:textSize="10sp"
+                android:letterSpacing="0.15"
+                android:textColor="@color/text_muted"
                 android:textStyle="bold"
-                android:textColor="@color/text_primary"/>
+                android:layout_marginBottom="10dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1. Enable Accessibility Service\n2. Grant Overlay Permission\n3. Use the START/STOP button"
-                android:textColor="@color/text_secondary"/>
+                android:text="01  Enable Accessibility Service\n02  Grant Overlay Permission\n03  Open TikTok — overlay button appears\n04  Tap ▶ to start  ·  ■ to stop"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:letterSpacing="0.03"
+                android:lineSpacingExtra="6dp"/>
 
         </LinearLayout>
 
