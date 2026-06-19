@@ -40,6 +40,10 @@ class AutoTapperService : AccessibilityService() {
     private var tapSpeed = 5 // taps per second
     private var tapJob: Job? = null
 
+    private var completedGestures = 0
+    private var cancelledGestures = 0
+    private var foregroundLossEvents = 0
+
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     // Target packages to monitor
@@ -149,21 +153,33 @@ class AutoTapperService : AccessibilityService() {
         isTapping = true
         tapState = TapState.STARTED
         tapCount = 0
+        completedGestures = 0
+        cancelledGestures = 0
+        foregroundLossEvents = 0
         updateButtonUI()
 
         tapJob = serviceScope.launch {
-            val delayMs = 1000L / tapSpeed
+            val baseDelay = 1000L / tapSpeed
 
             while (isTapping) {
+                if (!isTikTokForeground()) {
+                    foregroundLossEvents++
+                    stopTapping()
+                    break
+                }
                 performTap()
                 tapCount++
                 updateCounter()
-                delay(delayMs)
+                delay(baseDelay + (-30L..30L).random())
             }
         }
     }
 
     private fun stopTapping() {
+        if (tapCount > 0) {
+            val successRate = completedGestures * 100 / tapCount
+            Log.i(TAG, "Session summary — attempts: $tapCount | completed: $completedGestures | cancelled: $cancelledGestures | foreground losses: $foregroundLossEvents | success rate: $successRate%")
+        }
         Log.d(TAG, "Stopping tapping")
         isTapping = false
         tapState = TapState.STOPPED
@@ -172,15 +188,22 @@ class AutoTapperService : AccessibilityService() {
         updateButtonUI()
     }
 
-    private fun performTap() {
-        // Perform accessibility tap at center of screen
-        val displayMetrics = resources.displayMetrics
-        val screenWidth = displayMetrics.widthPixels
-        val screenHeight = displayMetrics.heightPixels
+    private fun isTikTokForeground(): Boolean {
+        return rootInActiveWindow?.packageName in targetPackages
+    }
 
-        // Tap at center of screen
-        val x = screenWidth / 2f
-        val y = screenHeight / 2f
+    private fun getRandomTapPoint(): Pair<Float, Float> {
+        val metrics = resources.displayMetrics
+        val centerX = metrics.widthPixels * 0.5f
+        val centerY = metrics.heightPixels * 0.38f
+        return Pair(
+            centerX + (-20..20).random(),
+            centerY + (-20..20).random()
+        )
+    }
+
+    private fun performTap() {
+        val (x, y) = getRandomTapPoint()
 
         Log.d(TAG, "Performing tap at ($x, $y)")
 
@@ -189,10 +212,23 @@ class AutoTapperService : AccessibilityService() {
 
         val gestureBuilder = GestureDescription.Builder()
         val gesture = gestureBuilder
-            .addStroke(GestureDescription.StrokeDescription(path, 0, 10))
+            .addStroke(GestureDescription.StrokeDescription(path, 0, 50))
             .build()
 
-        dispatchGesture(gesture, null, null)
+        dispatchGesture(
+            gesture,
+            object : GestureResultCallback() {
+                override fun onCompleted(gestureDescription: GestureDescription?) {
+                    completedGestures++
+                    Log.d(TAG, "Tap completed at ($x, $y)")
+                }
+                override fun onCancelled(gestureDescription: GestureDescription?) {
+                    cancelledGestures++
+                    Log.w(TAG, "Tap cancelled at ($x, $y)")
+                }
+            },
+            null
+        )
     }
 
     private fun updateButtonUI() {
