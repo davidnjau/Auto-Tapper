@@ -43,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvWarningTitle: TextView
     private lateinit var tvWarningMessage: TextView
 
+    private lateinit var btnViewHistory: TextView
+
     private enum class WarnLevel { NONE, CAUTION, DANGER }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +86,8 @@ class MainActivity : AppCompatActivity() {
         tvWarningIcon = findViewById(R.id.tvWarningIcon)
         tvWarningTitle = findViewById(R.id.tvWarningTitle)
         tvWarningMessage = findViewById(R.id.tvWarningMessage)
+
+        btnViewHistory = findViewById(R.id.btnViewHistory)
 
         val prefs = getSharedPreferences("AutoTapperPrefs", Context.MODE_PRIVATE)
 
@@ -136,6 +140,10 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Service already enabled", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        btnViewHistory.setOnClickListener {
+            SessionHistoryActivity.start(this)
         }
 
         btnOpenSettings.setOnClickListener {

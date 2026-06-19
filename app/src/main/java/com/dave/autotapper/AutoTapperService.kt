@@ -32,6 +32,8 @@ class AutoTapperService : AccessibilityService() {
     companion object {
         var instance: AutoTapperService? = null
         private val LIKE_COUNT_PATTERN = Regex("""^\d+(\.\d+)?[KkMmBb]?$""")
+        // Extracts a like-count token from within a longer string (e.g. "♥ 263.4K", "263.4K likes")
+        private val LIKE_COUNT_IN_TEXT = Regex("""\d+(?:\.\d+)?[KkMmBb]""")
         private const val CHANNEL_ID = "session_summary"
         private const val NOTIFICATION_ID = 1001
     }
@@ -228,6 +230,25 @@ class AutoTapperService : AccessibilityService() {
                 baseline = baseline,
                 endCount = endCount
             )
+
+            val actualDelta = if (baseline != null && endCount != null) endCount - baseline else null
+            val observedRatePct = if (baseline != null && endCount != null && tapCount > 0)
+                (endCount - baseline).toDouble() / tapCount * 100.0 else null
+
+            SessionStore.save(this, SessionData(
+                timestamp = System.currentTimeMillis(),
+                tapSpeed = tapSpeed,
+                tapMultiplier = tapMultiplier,
+                totalTaps = tapCount,
+                completedGestures = completedGestures,
+                cancelledGestures = cancelledGestures,
+                successRate = successRate,
+                estimatedLikes = estimatedLikes,
+                baselineLikes = baseline,
+                endLikes = endCount,
+                actualDelta = actualDelta,
+                observedRatePct = observedRatePct
+            ))
         }
         Log.d(TAG, "Stopping tapping")
         isTapping = false
@@ -388,18 +409,25 @@ class AutoTapperService : AccessibilityService() {
      * position filter can be tuned if needed.
      */
     private fun findLikeNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val text = (node.text?.toString() ?: node.contentDescription?.toString())?.trim() ?: ""
-        if (text.isNotEmpty() && LIKE_COUNT_PATTERN.matches(text)) {
-            val bounds = Rect()
-            node.getBoundsInScreen(bounds)
-            val metrics = resources.displayMetrics
-            val relX = bounds.centerX().toFloat() / metrics.widthPixels
-            val relY = bounds.centerY().toFloat() / metrics.heightPixels
-            Log.d(TAG, "Like count candidate: '$text'  relX=${"%.2f".format(relX)}  relY=${"%.2f".format(relY)}")
-            // Cover the left 60% and top 65% of the screen to handle variation across TikTok versions
-            if (relX < 0.60f && relY in 0.05f..0.65f) {
-                Log.i(TAG, "Like count matched: '$text'  relX=${"%.2f".format(relX)}  relY=${"%.2f".format(relY)}")
-                return node
+        val rawText = (node.text?.toString() ?: node.contentDescription?.toString())?.trim() ?: ""
+        if (rawText.isNotEmpty()) {
+            // Accept exact match OR extract a count token from a longer string (e.g. "♥ 263.4K", "263.4K likes")
+            val matchedToken = when {
+                LIKE_COUNT_PATTERN.matches(rawText) -> rawText
+                else -> LIKE_COUNT_IN_TEXT.find(rawText)?.value
+            }
+            if (matchedToken != null) {
+                val bounds = Rect()
+                node.getBoundsInScreen(bounds)
+                val metrics = resources.displayMetrics
+                val relX = bounds.centerX().toFloat() / metrics.widthPixels
+                val relY = bounds.centerY().toFloat() / metrics.heightPixels
+                Log.d(TAG, "Like count candidate: '$rawText' (token='$matchedToken')  relX=${"%.2f".format(relX)}  relY=${"%.2f".format(relY)}")
+                // Left 60%, top 65% — covers the top-left like counter across TikTok layouts
+                if (relX < 0.60f && relY in 0.05f..0.65f) {
+                    Log.i(TAG, "Like count matched: '$matchedToken'  relX=${"%.2f".format(relX)}  relY=${"%.2f".format(relY)}")
+                    return node
+                }
             }
         }
         for (i in 0 until node.childCount) {
@@ -410,7 +438,10 @@ class AutoTapperService : AccessibilityService() {
     }
 
     private fun parseLikeCount(raw: String): Long? {
-        val cleaned = raw.trim().uppercase().replace(",", "")
+        // Extract the numeric+suffix token in case the raw string has extra chars (e.g. "♥ 263.4K", "263.4K likes")
+        val token = if (LIKE_COUNT_PATTERN.matches(raw.trim())) raw.trim()
+                    else LIKE_COUNT_IN_TEXT.find(raw)?.value ?: raw.trim()
+        val cleaned = token.uppercase().replace(",", "")
         return when {
             cleaned.endsWith("B") -> cleaned.dropLast(1).toDoubleOrNull()?.times(1_000_000_000)?.toLong()
             cleaned.endsWith("M") -> cleaned.dropLast(1).toDoubleOrNull()?.times(1_000_000)?.toLong()

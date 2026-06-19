@@ -548,6 +548,20 @@
 
         </LinearLayout>
 
+        <!-- ── SESSION HISTORY ──────────────────────── -->
+        <TextView
+            android:id="@+id/btnViewHistory"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="VIEW SESSION HISTORY"
+            android:textSize="13sp"
+            android:letterSpacing="0.1"
+            android:textStyle="bold"
+            android:textColor="@color/cyan"
+            android:background="@drawable/bg_card_hud"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"/>
+
         <!-- ── OPERATION GUIDE ───────────────────────── -->
         <LinearLayout
             android:orientation="vertical"
